@@ -18,15 +18,15 @@ public class Generate {
 	static Integer endTime = 1000;
 	static Integer currentTime = 0;
 	static Integer lastTime = 0;
-
+	Random randomno = new Random(22);
 	// generate a data [id, priority, tolerance, sendtime, cost];
 	public Integer[] generateData() throws Exception, IOException {
-		Random randomno = new Random();
-//		Integer priority = (int) (1 / (Math.exp(-randomno.nextGaussian()))) * 4 + 1;
-		Integer priority = 1;
+		
+		Integer priority = (int) (1 / (1 + Math.exp(-randomno.nextGaussian())) * 4) + 1;
+//		Integer priority = 1;
 //		Integer tolerance = (int) (1 / (Math.exp(-randomno.nextGaussian()))) * 6000 + 1;
 		Integer tolerance = randomno.nextInt(40) + 1;
-		int cost = 2 * tolerance;
+		int cost = tolerance / 2 + 1;
 		Integer[] data = new Integer[5];
 		data[0] = id;
 		id++;
