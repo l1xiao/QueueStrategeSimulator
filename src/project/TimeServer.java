@@ -9,22 +9,30 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class TimeServer { 
-	private static int timeStamp, timeStamp1, timeStamp2;
-	private static int port = 8081;
+	private static int timeStamp, processTime, generateTime;
+	private static int endTime = 3000;
+	private static int timePort = 8081;
 	public TimeServer() throws IOException {
 		// TODO Auto-generated constructor stub
-		timeStamp = 0; 
-		ServerSocket server = new ServerSocket(port);
+		timeStamp = 0;
+		processTime = -1;
+		@SuppressWarnings("resource")
+		ServerSocket server = new ServerSocket(timePort);
 		while (true) {
+			if (timeStamp >= endTime) {
+				return;
+            }
 			System.out.println("server lauching, waiting for client...");
 			Socket socket = server.accept();  
             response(socket);
+            
 		}
 	}
 	private void response(Socket client) {
 		System.out.println("accept a client");
 		Thread task = new Thread() {
 			public void run() {
+				System.out.println("thread run()");
 				InputStream is;
 				try {
 					is = client.getInputStream();
@@ -34,32 +42,48 @@ public class TimeServer {
 					
 					// read request
 					Integer[] input = (Integer[]) ois.readObject();
+					System.out.println("receive data: " + input[0] + " " + input[1]);
 					int time = input[1];
 					int cli = input[0];
-
 					int currentTime = getTime(time, cli);
 					oos.writeObject(currentTime);
+					os.close();
+					ois.close();
+					oos.close();
+					if (currentTime == endTime) {
+						return;
+					}
 					// answer request
-					client.close();
 				} catch (IOException | ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}				
+				}
 			}
 		};
 		task.start();
+		
 	}
 
-	private static int getTime(int time, int client) {
+	private synchronized static int getTime(int time, int client) {
 		if (client == 0) {
-			timeStamp1 = timeStamp;
+			processTime = time;
 		} else if (client == 1) {
-			timeStamp2 = timeStamp;
+			generateTime = time;
 		}
-		timeStamp = Math.min(timeStamp1, timeStamp2);
+		System.out.println("generateTime:" + generateTime);
+		System.out.println("processTime:" + processTime);
+		// first time request from generate
+		if (processTime == -1) {
+			timeStamp = generateTime;
+			processTime = generateTime;
+		} else {
+			timeStamp = Math.min(processTime, generateTime);			
+		}
+		System.out.println("current time: " + timeStamp);
 		return timeStamp;
 	}
 	public static void main(String[] args) throws IOException {
+		@SuppressWarnings("unused")
 		TimeServer server = new TimeServer();
 	}
 }
