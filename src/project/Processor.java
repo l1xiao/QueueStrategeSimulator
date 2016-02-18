@@ -24,11 +24,44 @@ public class Processor {
 	static Queue<Integer[]> queue = new LinkedList<>();
 	static Queue<Integer[]>[] queues;
 	static int count = 0;
+	static final int priorities = 5;
 	boolean stoplisten = false;
 	private static int model = 0;
-
+	private Recorder record = new Recorder(200);
+	private class Recorder {
+		// window size
+		int n;
+		int[] counter;
+		LinkedList<Integer[]> _queue;
+		Recorder(int n) {
+			this.n = n;
+			this._queue = new LinkedList<Integer[]>();
+			this.counter = new int[priorities];
+		}		
+		public void record(Integer[] data) {
+			_queue.add(data);
+			counter[data[1]]++;
+			Integer[] current = data;
+			if (_queue.size() > n) {
+				current = _queue.poll();
+				counter[current[1]]--;
+			}
+		}		
+		public int[] getCount() {
+			return counter.clone();
+		}	
+		public int size() {
+			return _queue.size();
+		}
+		// 是否要修改概率
+		public boolean flag() {
+			// 
+			return false;
+		}
+	}
 	public Processor(int model) throws Exception {
 		Processor.model = model;
+
 		// buffer queue array
 		queues = new Queue[5];
 		for (int i = 0; i < 5; i++) {
@@ -81,6 +114,7 @@ public class Processor {
 				if (queue.peek()[4] + currentTime > endTime) {
 					getTime(endTime + 1);
 					System.out.println("结束了");
+					// TODO 中断正在阻塞的socket
 					break;
 				}
 				System.out.println("队列不空");
@@ -121,7 +155,7 @@ public class Processor {
 				// + "\tcurrentime:" + currentTime + "\n");
 				// }
 				// generate data: [id, priority, tolerance, generateTime];
-				// when all task finished, currentTime will be setted to 1, when
+				// when all task finished, currentTime will be setted to -1, when
 				// new item enqueue, currenTime should be send time.
 				if (currentTime == -1) {
 					currentTime = queue.peek()[3];
@@ -186,7 +220,7 @@ public class Processor {
 		return (int) Math.pow(2, priority);
 	}
 
-	public synchronized static void enqueue(Integer[] data) {
+	public synchronized void enqueue(Integer[] data) {
 		// poll each queue by an order
 		if (model == 0) {
 			queue.add(data);
@@ -200,6 +234,7 @@ public class Processor {
 					+ queue.size());
 			System.out.println("id:" + queues[priority - 1].peek()[0]
 					+ "\tpriority:" + priority);
+			// 设置概率
 			int[] choice = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4 };
 			int index = count % 15;
 			if (!queues[choice[index]].isEmpty()) {
@@ -218,7 +253,11 @@ public class Processor {
 			System.out.println("enqueue over, queue size:" + queue.size());
 			System.out.println("id:" + queue.peek());
 		} else if (model == 2) {
-			// window: last 200 query
+			
+			// 统计窗中的优先级概率分布
+			// window: last 200 query or last 200 timestamp?
+			this.record.record(data);
+			// 处理数据
 
 		}
 	}
@@ -230,7 +269,7 @@ public class Processor {
 				while (!stoplisten) {
 					System.out.println("start to listen...");
 					try {
-
+						
 						Socket socket = server.accept();
 						// System.out.println("accept");
 						System.out.println("set connection with generator...");
@@ -238,17 +277,13 @@ public class Processor {
 						ObjectInputStream ois = new ObjectInputStream(is);
 						Integer[] input = (Integer[]) ois.readObject();
 						System.out.println("query_id:" + input[0]);
-						// here may lead a problem, if current there is no
-						// running task
-						// currentTime = input[3];
 						count++;
 						enqueue(input);
 					} catch (IOException | ClassNotFoundException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				}
-			}
+				} }
 		};
 		task.start();
 	}
