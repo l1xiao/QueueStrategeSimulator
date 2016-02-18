@@ -73,16 +73,20 @@ public class Generate {
 		// set up connection
 //		client.connect();
 		Queue<Integer[]> q = new LinkedList<Integer[]>();
+		// 是否还要生成新数据
+		boolean flag = true;
 		while (true) {
 			// check quota
 			Integer[] data;
-			if (currentTime < endTime) {
+			if (currentTime < endTime && flag) {
 				data = client.generateData();
 				if (data[3] < endTime) {
 					q.add(data);					
+				} else {
+					flag = false;
 				}
 			}
-			System.out.println("队列还有：" + q.size());
+			System.out.println("队列还有：" + q.size() + "当前时间：" + currentTime);
 			if (!q.isEmpty()) {
 //				try {
 //		            Thread.sleep(1000);
@@ -98,6 +102,10 @@ public class Generate {
 					// send to processorServer;
 					client.sendData(q.poll());
 				}
+			} 
+			// 队列空了且不再生成新数据
+			else if (!flag) {
+				break;
 			}
 		}
 	}
