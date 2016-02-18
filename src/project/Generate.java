@@ -19,13 +19,13 @@ public class Generate {
 	static Integer currentTime = 0;
 	static Integer lastTime = 0;
 	Random randomno = new Random(22);
+
 	// generate a data [id, priority, tolerance, sendtime, cost];
 	public Integer[] generateData() throws Exception, IOException {
-		
+
 		Integer priority = (int) (1 / (1 + Math.exp(-randomno.nextGaussian())) * 4) + 1;
-//		Integer priority = 1;
-//		Integer tolerance = (int) (1 / (Math.exp(-randomno.nextGaussian()))) * 6000 + 1;
-		Integer tolerance = randomno.nextInt(40) + 1;
+		Integer tolerance = (int) (1 / (1 + Math.exp(-randomno.nextGaussian()))) * 10 + 1;
+		// Integer tolerance = randomno.nextInt(40) + 1;
 		int cost = tolerance / 2 + 1;
 		Integer[] data = new Integer[5];
 		data[0] = id;
@@ -37,7 +37,7 @@ public class Generate {
 		lastTime = lastTime + randomno.nextInt(10);
 		// send time
 		data[3] = lastTime;
-		
+
 		return data;
 	}
 
@@ -48,14 +48,14 @@ public class Generate {
 		oos.writeObject(data);
 		oos.close();
 		os.close();
-		
+
 	}
+
 	public int getTime(int request) throws IOException, Exception {
 		timeServer = new Socket("localhost", PORT2);
 		OutputStream os = timeServer.getOutputStream();
-		
 		ObjectOutputStream oos = new ObjectOutputStream(os);
-		Integer[] data = {1, request};
+		Integer[] data = { 1, request };
 		oos.writeObject(data);
 		InputStream is = timeServer.getInputStream();
 		ObjectInputStream ois = new ObjectInputStream(is);
@@ -64,14 +64,14 @@ public class Generate {
 		os.close();
 		ois.close();
 		is.close();
-		
+
 		return time;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		Generate client = new Generate();
 		// set up connection
-//		client.connect();
+		// client.connect();
 		Queue<Integer[]> q = new LinkedList<Integer[]>();
 		// 是否还要生成新数据
 		boolean flag = true;
@@ -81,18 +81,14 @@ public class Generate {
 			if (currentTime < endTime && flag) {
 				data = client.generateData();
 				if (data[3] < endTime) {
-					q.add(data);					
+					q.add(data);
 				} else {
 					flag = false;
 				}
 			}
 			System.out.println("队列还有：" + q.size() + "当前时间：" + currentTime);
+			// 发送队列不空，尝试发送请求
 			if (!q.isEmpty()) {
-//				try {
-//		            Thread.sleep(1000);
-//		        } catch (InterruptedException e) {
-//		            e.printStackTrace(); 
-//		        }
 				int serverTime = client.getTime(q.peek()[3]);
 				if (serverTime < q.peek()[3]) {
 					// do nothing
@@ -102,9 +98,10 @@ public class Generate {
 					// send to processorServer;
 					client.sendData(q.poll());
 				}
-			} 
+			}
 			// 队列空了且不再生成新数据
 			else if (!flag) {
+				client.getTime(endTime + 1);
 				break;
 			}
 		}

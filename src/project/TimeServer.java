@@ -8,10 +8,11 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class TimeServer { 
+public class TimeServer {
 	private static int timeStamp, processTime, generateTime;
 	private static int endTime = 3000;
 	private static int timePort = 8081;
+
 	public TimeServer() throws IOException {
 		// TODO Auto-generated constructor stub
 		timeStamp = 0;
@@ -21,13 +22,14 @@ public class TimeServer {
 		while (true) {
 			if (timeStamp >= endTime) {
 				return;
-            }
+			}
 			System.out.println("server lauching, waiting for client...");
-			Socket socket = server.accept();  
-            response(socket);
-            
+			Socket socket = server.accept();
+			response(socket);
+
 		}
 	}
+
 	private void response(Socket client) {
 		System.out.println("accept a client");
 		Thread task = new Thread() {
@@ -39,10 +41,11 @@ public class TimeServer {
 					OutputStream os = client.getOutputStream();
 					ObjectInputStream ois = new ObjectInputStream(is);
 					ObjectOutputStream oos = new ObjectOutputStream(os);
-					
+
 					// read request
 					Integer[] input = (Integer[]) ois.readObject();
-					System.out.println("receive data: " + input[0] + " " + input[1]);
+					System.out.println("receive data: " + input[0] + " "
+							+ input[1]);
 					int time = input[1];
 					int cli = input[0];
 					int currentTime = getTime(time, cli);
@@ -61,7 +64,7 @@ public class TimeServer {
 			}
 		};
 		task.start();
-		
+
 	}
 
 	private synchronized static int getTime(int time, int client) {
@@ -77,11 +80,12 @@ public class TimeServer {
 			timeStamp = generateTime;
 			processTime = generateTime;
 		} else {
-			timeStamp = Math.min(processTime, generateTime);			
+			timeStamp = Math.min(processTime, generateTime);
 		}
 		System.out.println("current time: " + timeStamp);
 		return timeStamp;
 	}
+
 	public static void main(String[] args) throws IOException {
 		@SuppressWarnings("unused")
 		TimeServer server = new TimeServer();

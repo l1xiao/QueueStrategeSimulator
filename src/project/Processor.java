@@ -27,7 +27,6 @@ public class Processor {
 	boolean stoplisten = false;
 	private static int model = 0;
 
-
 	public Processor(int model) throws Exception {
 		Processor.model = model;
 		// buffer queue array
@@ -67,6 +66,7 @@ public class Processor {
 		client.close();
 		return time;
 	}
+
 	// process thread
 	private void process() throws Exception {
 
@@ -76,19 +76,19 @@ public class Processor {
 		FileOutputStream fop = new FileOutputStream(f);
 		OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
 		while (currentTime < endTime) {
-			
+
 			if (!queue.isEmpty()) {
 				if (queue.peek()[4] + currentTime > endTime) {
 					getTime(endTime + 1);
 					System.out.println("结束了");
-					break; 
+					break;
 				}
 				System.out.println("队列不空");
-				 System.out.println("detail:" + queue.peek()[0]
-				 + "th query\tpriority:" + queue.peek()[1]
-				 + "\ttol:" + queue.peek()[2] + "\tcosttime:"
-				 + queue.peek()[4] + "\tsendtime:" + queue.peek()[3]
-				 + "\tcurrentime:" + currentTime + "\n");
+				System.out.println("detail:" + queue.peek()[0]
+						+ "th query\tpriority:" + queue.peek()[1] + "\ttol:"
+						+ queue.peek()[2] + "\tcosttime:" + queue.peek()[4]
+						+ "\tsendtime:" + queue.peek()[3] + "\tcurrentime:"
+						+ currentTime + "\n");
 				// fail to process send time + tolerance time < currentTime
 				if (queue.peek()[2] + queue.peek()[3] < currentTime) {
 					System.out.println("this request is time out, currentTime"
@@ -114,11 +114,11 @@ public class Processor {
 				System.out.println("当前队列大小：" + queue.size());
 				// for debug
 				// if (queue.size() == 1) {
-//				 System.out.println("detail:" + queue.peek()[0]
-//				 + "th query\tpriority:" + queue.peek()[1]
-//				 + "\ttol:" + queue.peek()[2] + "\tcosttime:"
-//				 + queue.peek()[4] + "\tsendtime:" + queue.peek()[3]
-//				 + "\tcurrentime:" + currentTime + "\n");
+				// System.out.println("detail:" + queue.peek()[0]
+				// + "th query\tpriority:" + queue.peek()[1]
+				// + "\ttol:" + queue.peek()[2] + "\tcosttime:"
+				// + queue.peek()[4] + "\tsendtime:" + queue.peek()[3]
+				// + "\tcurrentime:" + currentTime + "\n");
 				// }
 				// generate data: [id, priority, tolerance, generateTime];
 				// when all task finished, currentTime will be setted to 1, when
@@ -161,7 +161,7 @@ public class Processor {
 					}
 				}
 			} else {
-				
+
 			}
 		}
 
@@ -182,7 +182,7 @@ public class Processor {
 	}
 
 	private int getFail(int priority) {
-//		return priority;
+		// return priority;
 		return (int) Math.pow(2, priority);
 	}
 
@@ -190,7 +190,7 @@ public class Processor {
 		// poll each queue by an order
 		if (model == 0) {
 			queue.add(data);
-			System.out.println(data[0]+"th 加入队列");
+			System.out.println(data[0] + "th 加入队列");
 		} else if (model == 1) {
 			// judge the priority of the data
 			int priority = data[1];
@@ -217,8 +217,12 @@ public class Processor {
 			}
 			System.out.println("enqueue over, queue size:" + queue.size());
 			System.out.println("id:" + queue.peek());
+		} else if (model == 2) {
+			// window: last 200 query
+
 		}
 	}
+
 	// listen thread
 	public void listen() {
 		Thread task = new Thread() {
@@ -226,14 +230,14 @@ public class Processor {
 				while (!stoplisten) {
 					System.out.println("start to listen...");
 					try {
-						
+
 						Socket socket = server.accept();
-//						System.out.println("accept");
+						// System.out.println("accept");
 						System.out.println("set connection with generator...");
 						InputStream is = socket.getInputStream();
 						ObjectInputStream ois = new ObjectInputStream(is);
 						Integer[] input = (Integer[]) ois.readObject();
-						System.out.println("query_id:"+input[0]);
+						System.out.println("query_id:" + input[0]);
 						// here may lead a problem, if current there is no
 						// running task
 						// currentTime = input[3];
