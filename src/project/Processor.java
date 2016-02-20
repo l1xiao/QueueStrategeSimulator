@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-
 public class Processor {
 	private static ServerSocket server;
 	private static Socket client;
@@ -31,51 +30,53 @@ public class Processor {
 	boolean stoplisten = false;
 	private static int model = 0;
 	private Recorder record = new Recorder(200);
+
 	// sort by value
-	public class ArrayIndexComparator implements Comparator<Integer>
-	{
-	    private final Integer[] array;
+	public class ArrayIndexComparator implements Comparator<Integer> {
+		private final Integer[] array;
 
-	    public ArrayIndexComparator(Integer[] array)
-	    {
-	        this.array = array;
-	    }
+		public ArrayIndexComparator(Integer[] array) {
+			this.array = array;
+		}
 
-	    public Integer[] createIndexArray()
-	    {
-	        Integer[] indexes = new Integer[array.length];
-	        for (int i = 0; i < array.length; i++)
-	        {
-	            indexes[i] = i;
-	        }
-	        return indexes;
-	    }
+		public Integer[] createIndexArray() {
+			Integer[] indexes = new Integer[array.length];
+			for (int i = 0; i < array.length; i++) {
+				indexes[i] = i;
+			}
+			return indexes;
+		}
 
-	    @Override
-	    public int compare(Integer index1, Integer index2)
-	    {
-	         // Autounbox from Integer to int to use as array indexes
-	        return array[index1].compareTo(array[index2]);
-	    }
+		@Override
+		public int compare(Integer index1, Integer index2) {
+			// Autounbox from Integer to int to use as array indexes
+			return array[index1].compareTo(array[index2]);
+		}
 	}
+
 	// statistic for incoming data
 	private class Recorder {
 		// window size
-		int n;
-		Integer[] counter;
-		boolean flag;
-		LinkedList<Integer[]> _queue;
-		Integer[] lastRank = {0 , 1, 2, 3, 4};
+		private int n;
+		private Integer[] counter;
+		private boolean flag;
+		private LinkedList<Integer[]> _queue;
+		private Integer[] lastRank = { 0, 1, 2, 3, 4 };
+
 		Recorder(int n) {
 			this.n = n;
 			this._queue = new LinkedList<Integer[]>();
 			this.counter = new Integer[priorities];
+			for (int i = 0; i < priorities; i++) {
+				this.counter[i] = 0;
+			}
 			this.flag = false;
 		}
-		
+
 		// return false after record if rank not change
 		public boolean record(Integer[] data) {
 			_queue.add(data);
+			System.out.println(counter[0]);
 			counter[data[1]]++;
 			Integer[] last;
 			// queue if full
@@ -92,10 +93,12 @@ public class Processor {
 				return true;
 			}
 		}
+
 		public Integer[] getCount() {
 			return lastRank;
-		}			
+		}
 	}
+
 	public Processor(int model) throws Exception {
 		Processor.model = model;
 
@@ -192,7 +195,8 @@ public class Processor {
 				// + "\tcurrentime:" + currentTime + "\n");
 				// }
 				// generate data: [id, priority, tolerance, generateTime];
-				// when all task finished, currentTime will be setted to -1, when
+				// when all task finished, currentTime will be setted to -1,
+				// when
 				// new item enqueue, currenTime should be send time.
 				if (currentTime == -1) {
 					currentTime = queue.peek()[3];
@@ -271,42 +275,56 @@ public class Processor {
 					+ queue.size());
 			System.out.println("id:" + queues[priority - 1].peek()[0]
 					+ "\tpriority:" + priority);
-			// 设置概率
-			int[] choice = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4 };
-			int index = count % 15;
-			if (!queues[choice[index]].isEmpty()) {
-				System.out.println("not empty");
-
-				queue.add(queues[choice[index]].poll());
-			} else {
-				for (int i = 0; i < queues.length; i++) {
-					if (!queues[i].isEmpty()) {
-						queue.add(queues[i].poll());
-						System.out.println("i queue:" + i);
-						break;
-					}
-				}
-			}
+			// default rank
+			Integer[] rank = { 0, 1, 2, 3, 4 };
+			distribute(setDistribution(rank, -1));
 			System.out.println("enqueue over, queue size:" + queue.size());
 			System.out.println("id:" + queue.peek());
 		} else if (model == 2) {
-			
-			// 统计窗中的优先级概率分布
-			// window: last 200 query or last 200 timestamp?
-			boolean isChange = record.record(data);
-			if (isChange) {
-				Integer[] current = record.getCount();
-				// set distribution
-				Integer[] distribution = setDistribution(current);
-			} else {
-				
-			}
+			// put data into corresponded queue
+			int priority = data[1];
+			queues[priority - 1].add(data);
 
+			record.record(data);
+			Integer[] current = record.getCount();
+			Integer[] distribution = setDistribution(current, 0);
+			distribute(distribution);
 		}
 	}
-	private Integer[] setDistribution(Integer[] rank) {
-		Integer[] distribution = new Integer[rank.length];
+
+	private Integer[] setDistribution(Integer[] rank, int option) {
+		Integer[] distribution;
+		// default
+		if (option == 0) {
+			Integer[] choice = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4 };
+			distribution = choice;
+		}
+		// default case
+		else {
+			Integer[] choice = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4 };
+			distribution = choice;
+		}
 		return distribution;
+	}
+
+	private void distribute(Integer[] distiburion) {
+		// count should be generated randomly, not a constant.
+		int index = count % distiburion.length;
+		// corresponded queue is not empty
+		if (!queues[distiburion[index]].isEmpty()) {
+			System.out.println("not empty");
+			queue.add(queues[distiburion[index]].poll());
+		}
+		// current corresponded queue is empty, try to find a not empty queue
+		else {
+			for (int i = 0; i < queues.length; i++) {
+				if (!queues[i].isEmpty()) {
+					queue.add(queues[i].poll());
+					System.out.println("i queue:" + i);
+					break;
+				}
+			}
+		}
 	}
 
 	// listen thread
@@ -316,7 +334,7 @@ public class Processor {
 				while (!stoplisten) {
 					System.out.println("start to listen...");
 					try {
-						
+
 						Socket socket = server.accept();
 						// System.out.println("accept");
 						System.out.println("set connection with generator...");
@@ -330,13 +348,14 @@ public class Processor {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				} }
+				}
+			}
 		};
 		task.start();
 	}
 
 	public static void main(String[] args) throws Exception {
 		@SuppressWarnings("unused")
-		Processor processor = new Processor(1);
+		Processor processor = new Processor(2);
 	}
 }
