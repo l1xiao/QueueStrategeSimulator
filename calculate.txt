@@ -19,3 +19,4 @@ model1	12
 model0	8
 model0	26
 model2	16
+model2	8

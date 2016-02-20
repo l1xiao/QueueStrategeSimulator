@@ -41,7 +41,7 @@ success	detail:39th query	priority:3	tol:1	costtime:1	sendtime:170	finish:171
 success	detail:40th query	priority:2	tol:1	costtime:1	sendtime:170	finish:172
 success	detail:41th query	priority:2	tol:1	costtime:1	sendtime:172	finish:173
 success	detail:42th query	priority:2	tol:1	costtime:1	sendtime:179	finish:180
-fail:12	detail:43th query	priority:3	tol:1	costtime:1	sendtime:180	currentime:184
+success	detail:43th query	priority:3	tol:1	costtime:1	sendtime:180	finish:181
 success	detail:44th query	priority:4	tol:1	costtime:1	sendtime:184	finish:185
 success	detail:45th query	priority:1	tol:1	costtime:1	sendtime:185	finish:186
 success	detail:46th query	priority:3	tol:1	costtime:1	sendtime:192	finish:193
@@ -105,7 +105,7 @@ success	detail:103th query	priority:2	tol:1	costtime:1	sendtime:469	finish:470
 success	detail:104th query	priority:2	tol:1	costtime:1	sendtime:470	finish:471
 success	detail:105th query	priority:4	tol:1	costtime:1	sendtime:472	finish:473
 success	detail:106th query	priority:1	tol:1	costtime:1	sendtime:472	finish:474
-fail:16	detail:107th query	priority:2	tol:1	costtime:1	sendtime:472	currentime:474
+fail:8	detail:107th query	priority:2	tol:1	costtime:1	sendtime:472	currentime:474
 success	detail:108th query	priority:3	tol:1	costtime:1	sendtime:481	finish:482
 success	detail:109th query	priority:3	tol:1	costtime:1	sendtime:483	finish:484
 success	detail:110th query	priority:1	tol:1	costtime:1	sendtime:485	finish:486
@@ -224,4 +224,4 @@ success	detail:222th query	priority:2	tol:1	costtime:1	sendtime:991	finish:992
 success	detail:223th query	priority:1	tol:1	costtime:1	sendtime:993	finish:994
 success	detail:224th query	priority:3	tol:1	costtime:1	sendtime:995	finish:996
 
-total_fail:16
+total_fail:8

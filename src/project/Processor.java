@@ -294,9 +294,15 @@ public class Processor {
 
 	private Integer[] setDistribution(Integer[] rank, int option) {
 		Integer[] distribution;
-		// default
+		// auto adjust according to rank
 		if (option == 0) {
-			Integer[] choice = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4 };
+			Integer[] choice = new Integer[15];
+			int count = 0;
+			for (int i = 0; i < rank.length; i++) {
+				for (int j = 0; j < rank.length - i; j++) {
+					choice[count++] = rank[i];
+				}
+			}
 			distribution = choice;
 		}
 		// default case
