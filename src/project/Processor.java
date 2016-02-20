@@ -11,13 +11,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import edu.princeton.cs.algs4.BST;
 
 public class Processor {
 	private static ServerSocket server;
@@ -74,14 +72,16 @@ public class Processor {
 			this.counter = new Integer[priorities];
 			this.flag = false;
 		}
-		// return false if rank not change
+		
+		// return false after record if rank not change
 		public boolean record(Integer[] data) {
 			_queue.add(data);
 			counter[data[1]]++;
-			Integer temp;
 			Integer[] last;
+			// queue if full
 			if (_queue.size() > n) {
 				last = _queue.poll();
+				counter[last[1]]--;
 			}
 			ArrayIndexComparator comparator = new ArrayIndexComparator(counter);
 			Integer[] indexes = comparator.createIndexArray();
@@ -93,12 +93,8 @@ public class Processor {
 			}
 		}
 		public Integer[] getCount() {
-			return counter.clone();
-		}	
-		public int size() {
-			return _queue.size();
-		}
-		
+			return lastRank;
+		}			
 	}
 	public Processor(int model) throws Exception {
 		Processor.model = model;
@@ -297,12 +293,20 @@ public class Processor {
 			
 			// 统计窗中的优先级概率分布
 			// window: last 200 query or last 200 timestamp?
-			if (this.record.record(data)) {
+			boolean isChange = record.record(data);
+			if (isChange) {
+				Integer[] current = record.getCount();
+				// set distribution
+				Integer[] distribution = setDistribution(current);
+			} else {
 				
 			}
-			// 处理数据
 
 		}
+	}
+	private Integer[] setDistribution(Integer[] rank) {
+		Integer[] distribution = new Integer[rank.length];
+		return distribution;
 	}
 
 	// listen thread
