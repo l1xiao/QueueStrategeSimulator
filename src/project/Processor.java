@@ -11,8 +11,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import edu.princeton.cs.algs4.BST;
 
 public class Processor {
 	private static ServerSocket server;
@@ -28,36 +33,72 @@ public class Processor {
 	boolean stoplisten = false;
 	private static int model = 0;
 	private Recorder record = new Recorder(200);
+	// sort by value
+	public class ArrayIndexComparator implements Comparator<Integer>
+	{
+	    private final Integer[] array;
+
+	    public ArrayIndexComparator(Integer[] array)
+	    {
+	        this.array = array;
+	    }
+
+	    public Integer[] createIndexArray()
+	    {
+	        Integer[] indexes = new Integer[array.length];
+	        for (int i = 0; i < array.length; i++)
+	        {
+	            indexes[i] = i;
+	        }
+	        return indexes;
+	    }
+
+	    @Override
+	    public int compare(Integer index1, Integer index2)
+	    {
+	         // Autounbox from Integer to int to use as array indexes
+	        return array[index1].compareTo(array[index2]);
+	    }
+	}
+	// statistic for incoming data
 	private class Recorder {
 		// window size
 		int n;
-		int[] counter;
+		Integer[] counter;
+		boolean flag;
 		LinkedList<Integer[]> _queue;
+		Integer[] lastRank = {0 , 1, 2, 3, 4};
 		Recorder(int n) {
 			this.n = n;
 			this._queue = new LinkedList<Integer[]>();
-			this.counter = new int[priorities];
-		}		
-		public void record(Integer[] data) {
+			this.counter = new Integer[priorities];
+			this.flag = false;
+		}
+		// return false if rank not change
+		public boolean record(Integer[] data) {
 			_queue.add(data);
 			counter[data[1]]++;
-			Integer[] current = data;
+			Integer temp;
+			Integer[] last;
 			if (_queue.size() > n) {
-				current = _queue.poll();
-				counter[current[1]]--;
+				last = _queue.poll();
 			}
-		}		
-		public int[] getCount() {
+			ArrayIndexComparator comparator = new ArrayIndexComparator(counter);
+			Integer[] indexes = comparator.createIndexArray();
+			Arrays.sort(indexes, comparator);
+			if (Arrays.equals(indexes, lastRank)) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+		public Integer[] getCount() {
 			return counter.clone();
 		}	
 		public int size() {
 			return _queue.size();
 		}
-		// 是否要修改概率
-		public boolean flag() {
-			// 
-			return false;
-		}
+		
 	}
 	public Processor(int model) throws Exception {
 		Processor.model = model;
@@ -256,7 +297,9 @@ public class Processor {
 			
 			// 统计窗中的优先级概率分布
 			// window: last 200 query or last 200 timestamp?
-			this.record.record(data);
+			if (this.record.record(data)) {
+				
+			}
 			// 处理数据
 
 		}
