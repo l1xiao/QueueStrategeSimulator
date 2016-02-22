@@ -21,7 +21,7 @@ public class Processor {
 	private static Socket client;
 	static int PORT1 = 8080;
 	static int timePort = 8081;
-	static Integer endTime = 1000;
+	static Integer endTime = Setting.endTime;
 	static Integer currentTime = -1;
 	static Queue<Integer[]> queue = new LinkedList<>();
 	static Queue<Integer[]>[] queues;
@@ -77,12 +77,12 @@ public class Processor {
 		public boolean record(Integer[] data) {
 			_queue.add(data);
 			System.out.println(counter[0]);
-			counter[data[1]]++;
+			counter[data[1] - 1]++;
 			Integer[] last;
 			// queue if full
 			if (_queue.size() > n) {
 				last = _queue.poll();
-				counter[last[1]]--;
+				counter[last[1] - 1]--;
 			}
 			ArrayIndexComparator comparator = new ArrayIndexComparator(counter);
 			Integer[] indexes = comparator.createIndexArray();
@@ -314,7 +314,7 @@ public class Processor {
 	}
 
 	private void distribute(Integer[] distiburion) {
-		// count should be generated randomly, not a constant.
+		// TODO count should be generated randomly, not a constant.
 		int index = count % distiburion.length;
 		// corresponded queue is not empty
 		if (!queues[distiburion[index]].isEmpty()) {
@@ -351,7 +351,6 @@ public class Processor {
 						count++;
 						enqueue(input);
 					} catch (IOException | ClassNotFoundException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}

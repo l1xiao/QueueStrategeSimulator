@@ -15,7 +15,7 @@ public class Generate {
 	static int PORT1 = 8080;
 	static int PORT2 = 8081;
 	static Integer id = 0;
-	static Integer endTime = 1000;
+	static Integer endTime = Setting.endTime;
 	static Integer currentTime = 0;
 	static Integer lastTime = 0;
 	Random randomno = new Random(22);
@@ -23,8 +23,8 @@ public class Generate {
 	// generate a data [id, priority, tolerance, sendtime, cost];
 	public Integer[] generateData() throws Exception, IOException {
 
-		Integer priority = (int) (1 / (1 + Math.exp(-randomno.nextGaussian())) * 4) + 1;
-		Integer tolerance = (int) (1 / (1 + Math.exp(-randomno.nextGaussian()))) * 10 + 1;
+		Integer priority = Setting.getPriority();
+		Integer tolerance = Setting.getTolerance();
 		// Integer tolerance = randomno.nextInt(40) + 1;
 		int cost = tolerance / 2 + 1;
 		Integer[] data = new Integer[5];
@@ -32,12 +32,11 @@ public class Generate {
 		id++;
 		data[1] = priority;
 		data[2] = tolerance;
-		// cost
-		data[4] = cost;
-		lastTime = lastTime + randomno.nextInt(10);
 		// send time
+		lastTime = lastTime + randomno.nextInt(10);
 		data[3] = lastTime;
-
+		// cost
+		data[4] = Setting.getCost(tolerance);
 		return data;
 	}
 

@@ -10,7 +10,7 @@ import java.net.Socket;
 
 public class TimeServer {
 	private static int timeStamp, processTime, generateTime;
-	private static int endTime = 3000;
+	private static int endTime = Setting.endTime + 100;
 	private static int timePort = 8081;
 
 	public TimeServer() throws IOException {
