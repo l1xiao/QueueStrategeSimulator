@@ -97,6 +97,14 @@ public class Processor {
 		public Integer[] getCount() {
 			return lastRank;
 		}
+		
+		public Integer[] getStatistic() {
+			return counter;
+		}
+		
+		public int size() {
+			return _queue.size();
+		}
 	}
 
 	public Processor(int model) throws Exception {
@@ -284,10 +292,10 @@ public class Processor {
 			// put data into corresponded queue
 			int priority = data[1];
 			queues[priority - 1].add(data);
-
 			record.record(data);
 			Integer[] current = record.getCount();
-			Integer[] distribution = setDistribution(current, 0);
+			// set option
+			Integer[] distribution = setDistribution(current, 1);
 			distribute(distribution);
 		}
 	}
@@ -304,6 +312,20 @@ public class Processor {
 				}
 			}
 			distribution = choice;
+		} 
+		else if (option == 1) {
+			Integer[] choice = new Integer[100];
+			Arrays.fill(choice, 0);
+			Integer[] counter = record.getStatistic();
+			int index = 0;
+			for (int i = 0; i < priorities; i++) {
+				double p = counter[i] / (double)record.size();
+				for (int j = index; j < p * 100; j++) {
+					choice[j] = i;
+					index = j;
+				}
+			}
+			distribution = choice;
 		}
 		// default case
 		else {
@@ -315,7 +337,8 @@ public class Processor {
 
 	private void distribute(Integer[] distiburion) {
 		// TODO count should be generated randomly, not a constant.
-		int index = count % distiburion.length;
+		
+		int index = Setting.randomno.nextInt(1000) % distiburion.length;
 		// corresponded queue is not empty
 		if (!queues[distiburion[index]].isEmpty()) {
 			System.out.println("not empty");
@@ -361,6 +384,6 @@ public class Processor {
 
 	public static void main(String[] args) throws Exception {
 		@SuppressWarnings("unused")
-		Processor processor = new Processor(2);
+		Processor processor = new Processor(Setting.model);
 	}
 }
