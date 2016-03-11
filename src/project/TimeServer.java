@@ -30,7 +30,7 @@ public class TimeServer {
 		}
 	}
 
-	private void response(Socket client) {
+	private void response(final Socket client) {
 		System.out.println("accept a client");
 		Thread task = new Thread() {
 			public void run() {
