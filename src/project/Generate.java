@@ -70,7 +70,6 @@ public class Generate {
 	public static void main(String[] args) throws Exception {
 		Generate client = new Generate();
 		// set up connection
-		// client.connect();
 		Queue<Integer[]> q = new LinkedList<Integer[]>();
 		// 是否还要生成新数据
 		boolean flag = true;
@@ -86,7 +85,7 @@ public class Generate {
 				}
 			}
 			System.out.println("队列还有：" + q.size() + "当前时间：" + currentTime);
-			// 发送队列不空，尝试发送请求
+			// if send queue is not empty, try to send data
 			if (!q.isEmpty()) {
 				int serverTime = client.getTime(q.peek()[3]);
 				if (serverTime < q.peek()[3]) {
@@ -98,7 +97,7 @@ public class Generate {
 					client.sendData(q.poll());
 				}
 			}
-			// 队列空了且不再生成新数据
+			// queue is empty and not generate new data
 			else if (!flag) {
 				client.getTime(endTime + 1);
 				break;
