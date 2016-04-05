@@ -158,8 +158,9 @@ public class Processor {
 		FileOutputStream fop = new FileOutputStream(f);
 		OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
 		while (currentTime < endTime) {
-
+			System.out.println("--");
 			if (!queue.isEmpty()) {
+				System.out.println("-1-");
 				if (queue.peek()[4] + currentTime > endTime) {
 					getTime(endTime + 1);
 					System.out.println("结束了");
@@ -388,7 +389,7 @@ public class Processor {
 						InputStream is = socket.getInputStream();
 						ObjectInputStream ois = new ObjectInputStream(is);
 						Integer[] input = (Integer[]) ois.readObject();
-						System.out.println("query_id:" + input[0]);
+						// System.out.println("query_id:" + input[0]);
 						count++;
 						enqueue(input);
 					} catch (IOException | ClassNotFoundException e) {

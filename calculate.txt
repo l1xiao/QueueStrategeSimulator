@@ -49,6 +49,7 @@ model2	1156
 model0	1192
 model1	1172
 model1	1124
+<<<<<<< HEAD
 model1	1168
 model2	1120
 model0	1188
@@ -75,3 +76,11 @@ model0	1760
 model0	2290
 model1	1976
 model2	1786
+=======
+model1	1120
+model1	1120
+model1	1322
+model0	1322
+model1	1322
+model2	1322
+>>>>>>> dfdad5ccbcf17a22fb9b12c371151775792d48ab
