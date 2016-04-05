@@ -26,7 +26,6 @@ public class Generate {
 		Integer priority = Setting.getPriority();
 		Integer tolerance = Setting.getTolerance();
 		// Integer tolerance = randomno.nextInt(40) + 1;
-		int cost = tolerance / 2 + 1;
 		Integer[] data = new Integer[5];
 		data[0] = id;
 		id++;

@@ -58,6 +58,7 @@ public class Processor {
 	private class Recorder {
 		// window size
 		private int n;
+		// counter records the number of five priorities query
 		private Integer[] counter;
 		private boolean flag;
 		private LinkedList<Integer[]> _queue;
@@ -270,11 +271,13 @@ public class Processor {
 	}
 
 	public synchronized void enqueue(Integer[] data) {
-		// poll each queue by an order
+		// Model:FIFO
 		if (model == 0) {
 			queue.add(data);
 			System.out.println(data[0] + "th 加入队列");
-		} else if (model == 1) {
+		} 
+		// Model:WQF
+		else if (model == 1) {
 			// judge the priority of the data
 			int priority = data[1];
 			queues[priority - 1].add(data);
@@ -285,23 +288,29 @@ public class Processor {
 					+ "\tpriority:" + priority);
 			// default rank
 			Integer[] rank = { 0, 1, 2, 3, 4 };
-			distribute(setDistribution(rank, -1));
+			Integer[][] getDistribution = setDistribution(rank, 0);
+			distribute(getDistribution[0], getDistribution[1][0]);
 			System.out.println("enqueue over, queue size:" + queue.size());
 			System.out.println("id:" + queue.peek());
-		} else if (model == 2) {
+		} 
+		// Model:Dynamic Weight Queue
+		else if (model == 2) {
 			// put data into corresponded queue
 			int priority = data[1];
 			queues[priority - 1].add(data);
 			record.record(data);
 			Integer[] current = record.getCount();
 			// set option
-			Integer[] distribution = setDistribution(current, 1);
-			distribute(distribution);
+			Integer[][] distribution = setDistribution(current, 1);
+			distribute(distribution[0], distribution[1][0]);
 		}
 	}
 
-	private Integer[] setDistribution(Integer[] rank, int option) {
+	// return a 2D array, {0:distribution, 1:length};
+	private Integer[][] setDistribution(Integer[] rank, int option) {
 		Integer[] distribution;
+		int length = 0;
+		Integer[][] result = new Integer[2][];
 		// auto adjust according to rank
 		if (option == 0) {
 			Integer[] choice = new Integer[15];
@@ -312,33 +321,42 @@ public class Processor {
 				}
 			}
 			distribution = choice;
+			length = distribution.length;
 		} 
+		// change weight according to the statistic
 		else if (option == 1) {
-			Integer[] choice = new Integer[100];
+			// Probability array
+			Integer[] choice = new Integer[1000];
 			Arrays.fill(choice, 0);
+			// get rank with counter
 			Integer[] counter = record.getStatistic();
-			int index = 0;
+			// set weight
+			int j = 0;
+			double[] coefficient = {0.5, 0.8, 1.1, 1.5, 2};
 			for (int i = 0; i < priorities; i++) {
-				double p = counter[i] / (double)record.size();
-				for (int j = index; j < p * 100; j++) {
+				double p = counter[i] / (double)record.size() * coefficient[i];
+				for (; j < p * 100; j++) {
 					choice[j] = i;
-					index = j;
 				}
 			}
 			distribution = choice;
+			length = j;
 		}
 		// default case
 		else {
-			Integer[] choice = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4 };
+			Integer[] choice = { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 4 };
 			distribution = choice;
+			length = distribution.length;
 		}
-		return distribution;
+		result[0] = distribution;
+		result[1] = new Integer[1];
+		result[1][0] = length;
+		return result;
 	}
 
-	private void distribute(Integer[] distiburion) {
-		// TODO count should be generated randomly, not a constant.
-		
-		int index = Setting.randomno.nextInt(1000) % distiburion.length;
+	private void distribute(Integer[] distiburion, int length) {
+		// TODO count should be generated randomly, not a constant.	
+		int index = Setting.randomno.nextInt(1000) % length;
 		// corresponded queue is not empty
 		if (!queues[distiburion[index]].isEmpty()) {
 			System.out.println("not empty");
@@ -346,7 +364,7 @@ public class Processor {
 		}
 		// current corresponded queue is empty, try to find a not empty queue
 		else {
-			for (int i = 0; i < queues.length; i++) {
+			for (int i = queues.length - 1; i > 0; i--) {
 				if (!queues[i].isEmpty()) {
 					queue.add(queues[i].poll());
 					System.out.println("i queue:" + i);
